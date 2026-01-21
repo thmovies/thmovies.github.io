@@ -129,6 +129,8 @@
             themeToggle: document.getElementById('themeToggle')
         };
 
+        // Credenziali offuscate: solo "utente1" → hash SHA-256 di "gurman"
+        // Oggetto JSON → Base64
         const obfuscatedCreds = 'eyJ1dGVudGUxIjoiZjkxZTUyZGIzNjUwYTJiMThiMWViOTliN2E3MTdhNWEyYTJhODE3Y2NhZjA5ZWVlNzFlNWEzMjVmZGUwNTMyMDYifQ==';
 
         async function getHash(str) {
