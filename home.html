@@ -306,7 +306,7 @@
 	// Controlla autenticazione
 	if (localStorage.getItem("authenticated") !== "true") {
     alert("Devi fare login prima di accedere!");
-    location.href = "login.html";
+    location.href = "index.html";
 }
     const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ZTExOGZjMThjNDdiZGU3ODc1ZDY0MGRlMGE4ZWQzMiIsIm5iZiI6MTc2ODkxMDYwOC4xNTM5OTk4LCJzdWIiOiI2OTZmNmYxMDViN2EyMjEzMTlmZTEwZTMiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.byUoqZfilhnXxG6u41zxVIpnQ8Z3J4UqSzuGmDQHaPA';
     const tmdbHeaders = { Authorization: `Bearer ${TMDB_TOKEN}`, 'Content-Type': 'application/json;charset=utf-8' };
