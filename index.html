@@ -28,7 +28,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.4s ease;
         }
         .login-container {
             background: var(--card-bg);
@@ -95,90 +94,73 @@
             font-size: 1.5rem;
             cursor: pointer;
             box-shadow: 0 4px 15px var(--shadow);
-            transition: all 0.3s;
-        }
-        #themeToggle:hover {
-            transform: scale(1.1);
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <h1>THMovies Login</h1>
-        
-        <div class="warning">
-            <strong>Prima di fare login:</strong><br>
-            Scarica e installa <a href="https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh" target="_blank" rel="noopener noreferrer">uBlock Origin Lite</a> 
-            per bloccare le pubblicità fastidiose durante la visione!
-        </div>
 
-        <input type="text" id="username" placeholder="Username" autocomplete="off">
-        <input type="password" id="password" placeholder="Password" autocomplete="off">
-        <button id="loginBtn">Accedi</button>
-        <div id="errorMsg"></div>
+<body>
+
+<div class="login-container">
+    <h1>THMovies Login</h1>
+
+    <div class="warning">
+        <strong>Prima di fare login:</strong><br>
+        Scarica e installa
+        <a href="https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh"
+           target="_blank" rel="noopener noreferrer">
+           uBlock Origin Lite
+        </a>
+        per bloccare le pubblicità fastidiose durante la visione!
     </div>
 
-    <button id="themeToggle">☀️</button>
+    <input type="text" id="username" placeholder="Username" autocomplete="off">
+    <input type="password" id="password" placeholder="Password" autocomplete="off">
+    <button onclick="login()">Accedi</button>
+    <div id="errorMsg"></div>
+</div>
 
-    <script>
-        const els = {
-            username: document.getElementById('username'),
-            password: document.getElementById('password'),
-            loginBtn: document.getElementById('loginBtn'),
-            error: document.getElementById('errorMsg'),
-            themeToggle: document.getElementById('themeToggle')
-        };
+<button id="themeToggle">☀️</button>
 
-        // Credenziali offuscate: solo "utente1" → hash SHA-256 di "gurman"
-        // Oggetto JSON → Base64
-        const obfuscatedCreds = 'eyJ1dGVudGUxIjoiZjkxZTUyZGIzNjUwYTJiMThiMWViOTliN2E3MTdhNWEyYTJhODE3Y2NhZjA5ZWVlNzFlNWEzMjVmZGUwNTMyMDYifQ==';
+<script>
+/*
+ CREDENZIALI OFFUSCATE (BASE64)
+ utente1:gurman
+*/
+const CREDS = "dXRlbnRlMTpndXJtYW4=";
 
-        async function getHash(str) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(str);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
+function login() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const error = document.getElementById("errorMsg");
 
-        els.loginBtn.onclick = async () => {
-            const user = els.username.value.trim();
-            const pass = els.password.value.trim();
-            
-            if (!user || !pass) {
-                els.error.textContent = 'Inserisci username e password!';
-                return;
-            }
+    if (!user || !pass) {
+        error.textContent = "Inserisci username e password!";
+        return;
+    }
 
-            // Decodifica
-            let decoded;
-            try {
-                decoded = atob(obfuscatedCreds);
-                const creds = JSON.parse(decoded);
-                
-                const inputHash = await getHash(pass);
-                if (creds[user] === inputHash) {
-                    localStorage.setItem('authenticated', 'true');
-                    window.location.href = 'index.html';
-                } else {
-                    els.error.textContent = 'Credenziali errate!';
-                }
-            } catch (e) {
-                els.error.textContent = 'Errore interno. Riprova.';
-            }
-        };
+    const decoded = atob(CREDS);
+    const [u, p] = decoded.split(":");
 
-        els.themeToggle.onclick = () => {
-            document.body.classList.toggle('light');
-            els.themeToggle.textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
-        };
+    if (user === u && pass === p) {
+        localStorage.setItem("authenticated", "true");
+        window.location.href = "index.html";
+    } else {
+        error.textContent = "Credenziali errate!";
+    }
+}
 
-        window.onload = () => {
-            if (localStorage.getItem('authenticated') === 'true') {
-                window.location.href = 'index.html';
-            }
-            els.themeToggle.textContent = '☀️';
-        };
-    </script>
+document.getElementById("themeToggle").onclick = () => {
+    document.body.classList.toggle("light");
+    themeToggle.textContent =
+        document.body.classList.contains("light") ? "🌙" : "☀️";
+};
+
+window.onload = () => {
+    if (localStorage.getItem("authenticated") === "true") {
+        window.location.href = "home.html";
+    }
+};
+</script>
+
 </body>
 </html>
