@@ -129,7 +129,7 @@
             themeToggle: document.getElementById('themeToggle')
         };
 
-        const obfuscatedCreds = 'eyJ1dGVudGUxIjoiZTRkYTNiN2ZiYmNlMjM0NWQ3NzcyYjA2NzRhMzE4ZDUifQ==';
+        const obfuscatedCreds = 'eyJ1dGVudGUxIjoiZjkxZTUyZGIzNjUwYTJiMThiMWViOTliN2E3MTdhNWEyYTJhODE3Y2NhZjA5ZWVlNzFlNWEzMjVmZGUwNTMyMDYifQ==';
 
         async function getHash(str) {
             const encoder = new TextEncoder();
@@ -148,6 +148,7 @@
                 return;
             }
 
+            // Decodifica
             let decoded;
             try {
                 decoded = atob(obfuscatedCreds);
@@ -156,7 +157,7 @@
                 const inputHash = await getHash(pass);
                 if (creds[user] === inputHash) {
                     localStorage.setItem('authenticated', 'true');
-                    window.location.href = 'home.html';
+                    window.location.href = 'index.html';
                 } else {
                     els.error.textContent = 'Credenziali errate!';
                 }
