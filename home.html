@@ -144,15 +144,15 @@
       justify-content: center;
     }
     .episode-selector select {
-      padding: 12px 20px;
-      border-radius: 50px;
-      border: none;
-      background: var(--card-bg);
-      color: var(--text);
-      font-size: 1rem;
-      min-width: 180px;
-      cursor: pointer;
-    }
+		padding: 12px 20px;
+		border-radius: 50px;
+		border: none;
+		background: var(--card-bg);
+		color: var(--text);
+		font-size: 1rem;
+		min-width: 220px; /* Era 180px, ora 220px come richiesto */
+		cursor: pointer;
+	}
     #playBtn, #retryBtn, #openTab {
       width: 100%;
       max-width: 400px;
@@ -229,13 +229,10 @@
   <header>
   <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
     <img 
-      src="Logo.jpg" 
+      src="logo.png" 
       alt="THMovies Logo" 
-      style="max-height: 120px; width: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(255,77,77,0.3); object-fit: contain;"
+      style="max-height: 120px; width: auto;"
     >
-    <h1 style="margin: 0; font-size: 2.8rem; color: var(--accent); text-shadow: 0 2px 10px rgba(255,77,77,0.4);">
-      THMovies
-    </h1>
   </div>
 </header>
 
@@ -282,7 +279,7 @@
   </section>
 
   <button id="playBtn" disabled>▶ Riproduci</button>
-  <button id="retryBtn" style="display:none;">Salta</button>
+  <button id="retryBtn" style="display:none;">Riprova</button>
   <button id="openTab" style="display:none;">Nuova scheda</button>
 
   <div id="statusMsg" class="status"></div>
@@ -302,6 +299,8 @@
 
   <script>
   const CREDS = "dXRlbnRlMTpndXJtYW4=";
+  let currentProviderIndex = 0;
+  
 
 	// Controlla autenticazione
 	if (localStorage.getItem("authenticated") !== "true") {
@@ -312,10 +311,29 @@
     const tmdbHeaders = { Authorization: `Bearer ${TMDB_TOKEN}`, 'Content-Type': 'application/json;charset=utf-8' };
 
     const PROVIDERS = {
-      movie: id => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
-      tv: (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
-      anime: (id, s, e, lang='') => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}${lang}`
-    };
+    movie: [
+        id => `https://vidsrc.to/embed/movie/${id}`,  
+        id => `https://vidsrc.pro/embed/${id}`,
+        id => `https://autoembed.cc/movie/${id}`,
+        id => `https://vidsrc.in/embed/movie?tmdb=${id}`,
+        id => `https://multiembed.mov/?video_id=${id}&tmdb=1`
+    ],
+    tv: [
+        (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
+        (id, s, e) => `https://vidsrc.pro/embed/${id}/${s}/${e}`,
+        (id, s, e) => `https://autoembed.cc/tv/${id}/${s}/${e}`,
+        (id, s, e) => `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}`,
+        (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`
+    ],
+    anime: [
+        (id, s, e, lang) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}${lang}`,
+        (id, s, e, lang) => `https://vidsrc.pro/embed/${id}/${s}/${e}${lang}`,
+        (id, s, e, lang) => `https://autoembed.cc/tv/${id}/${s}/${e}${lang ? `&${lang.slice(1)}` : ''}`,
+        (id, s, e, lang) => `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}${lang}`,
+        (id, s, e, lang) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}${lang}`
+    ]
+};
+
 
     let currentType = 'movie';
     let selected = { id: null, season: 1, episode: 1, lang: '' };
@@ -465,51 +483,73 @@
       const epSelect = type === 'tv' ? els.episode.tv : els.episode.anime;
       epSelect.innerHTML = '';
 
-      data.episodes.forEach(ep => {
-        const opt = document.createElement('option');
-        opt.value = ep.episode_number;
-        opt.text = `Ep ${ep.episode_number}`;
-        epSelect.appendChild(opt);
-      });
+		data.episodes.forEach(ep => {
+		const opt = document.createElement('option');
+		opt.value = ep.episode_number;
+		opt.text = `Ep ${ep.episode_number}: ${ep.name || 'Episodio senza titolo'}`;
+		epSelect.appendChild(opt);
+		});
 
       selected.season = +season;
       selected.episode = 1;
       epSelect.value = 1;
     }
 
-    function loadPlayer() {
-      if (!selected.id) return showError('Seleziona un titolo!');
-      if (currentType !== 'movie' && (!selected.season || !selected.episode)) return showError('Seleziona stagione/episodio!');
+   async function loadPlayer(startIndex = 0) {  // ← accetta startIndex per skip
+    if (!selected.id) return showError('Seleziona un titolo!');
+    if (currentType !== 'movie' && (!selected.season || !selected.episode)) return showError('Seleziona stagione/episodio!');
 
-      showLoading(true);
-      showStatus('Caricamento player...');
+    showLoading(true);
+    const providerList = PROVIDERS[currentType];
+    let success = false;
+    currentProviderIndex = startIndex;  // Parte da dove vogliamo
 
-      const url = currentType === 'movie' ? PROVIDERS.movie(selected.id) :
-                  currentType === 'tv' ? PROVIDERS.tv(selected.id, selected.season, selected.episode) :
-                  PROVIDERS.anime(selected.id, selected.season, selected.episode, selected.lang);
+    for (let i = currentProviderIndex; i < providerList.length; i++) {
+        currentProviderIndex = i;
+        const url = currentType === 'movie' 
+            ? providerList[i](selected.id)
+            : providerList[i](selected.id, selected.season, selected.episode, selected.lang);
 
-      els.player.src = url;
-      els.retryBtn.style.display = 'block';
-      els.openTab.style.display = 'block';
-      els.openTab.onclick = () => window.open(url, '_blank');
+        const providerName = url.split('/')[2].replace('www.', '');  // es. vidsrc.xyz
+        showStatus(`Provando ${providerName} (${i+1}/${providerList.length})...`);
 
-      const timeout = setTimeout(() => {
-        showLoading(false);
-        showError('Caricamento lento, prova a saltare');
-      }, 45000);
+        els.player.src = url;
+        els.openTab.onclick = () => window.open(url, '_blank');
 
-      els.player.onload = () => {
-        clearTimeout(timeout);
-        showLoading(false);
-        showStatus('Pronto!');
-      };
+        try {
+			await new Promise((resolve, reject) => {
+				const timeout = setTimeout(() => reject('timeout'), 12000);
 
-      els.player.onerror = () => {
-        clearTimeout(timeout);
-        showLoading(false);
-        showError('Errore caricamento');
-      };
+				els.player.onload = () => {
+					// Grace period ridotto: 3 secondi extra per verificare sources
+					setTimeout(() => {
+						resolve('loaded');
+					}, 3000);
+				};
+
+				els.player.onerror = () => {
+					clearTimeout(timeout);
+					reject('iframe error');
+				};
+        });
+
+            success = true;
+            showStatus(`Caricato con ${providerName}! Se non parte → clicca Riprova per saltare.`);
+            break;
+        } catch (err) {
+            showError(`${providerName} fallito (${err}). Passo al successivo...`);
+        }
     }
+
+    showLoading(false);
+    els.retryBtn.style.display = 'block';
+    els.openTab.style.display = 'block';
+
+    if (!success) {
+        showError('Tutti i provider falliti o senza fonti. Prova un titolo più popolare o riprova dopo.');
+        currentProviderIndex = 0;  // Reset per prossimo tentativo
+    }
+}
 
     // EVENTI
     els.tabs.forEach(btn => {
@@ -547,8 +587,19 @@
     els.episode.anime.onchange = () => selected.episode = +els.episode.anime.value;
     els.lang.onchange = () => selected.lang = els.lang.value;
 
-    els.playBtn.onclick = loadPlayer;
-    els.retryBtn.onclick = loadPlayer;
+    els.playBtn.onclick = () => {
+    currentProviderIndex = 0;
+    loadPlayer(0);
+};
+
+els.retryBtn.onclick = () => {
+    // Skip al prossimo (o riavvia se ultimo)
+    const nextIndex = (currentProviderIndex + 1) % PROVIDERS[currentType].length;
+    if (nextIndex === 0) {
+        showStatus('Ritorno al primo provider (ciclo completato)');
+    }
+    loadPlayer(nextIndex);
+};
 
     els.themeToggle.onclick = () => {
       document.body.classList.toggle('light');
