@@ -101,7 +101,11 @@
 <body>
 
 <div class="login-container">
-    <h1>THMovies Login</h1>
+    <img 
+      src="logo.png" 
+      alt="THMovies Logo" 
+      style="max-height: 120px; width: auto;"
+    >
 
     <div class="warning">
         <strong>Prima di fare login:</strong><br>
@@ -122,10 +126,6 @@
 <button id="themeToggle">☀️</button>
 
 <script>
-/*
- CREDENZIALI OFFUSCATE (BASE64)
- utente1:gurman
-*/
 const CREDS = "dXRlbnRlMTpndXJtYW4=";
 
 function login() {
@@ -143,7 +143,7 @@ function login() {
 
     if (user === u && pass === p) {
         localStorage.setItem("authenticated", "true");
-        window.location.href = "index.html";
+        window.location.href = "home.html";
     } else {
         error.textContent = "Credenziali errate!";
     }
