@@ -1,258 +1,304 @@
 <!DOCTYPE html>
 <html lang="it">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>THMOVIES - Login</title>
-      <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-      <style>
-         :root {
-         --bg: linear-gradient(135deg, #0b0015 0%, #1a0026 100%);
-         --card-bg: rgba(20, 10, 40, 0.85);
-         --text: #ffd700;
-         --accent: #ff4500;
-         --accent-glow: #ff8c00;
-         --shadow: rgba(255, 69, 0, 0.4);
-         }
-         body.light {
-         --bg: linear-gradient(135deg, #fff8e1 0%, #ffe4b5 100%);
-         --card-bg: rgba(255, 245, 220, 0.9);
-         --text: #8b4513;
-         --accent: #ff4500;
-         --accent-glow: #ff8c00;
-         --shadow: rgba(139, 69, 19, 0.3);
-         }
-         body {
-         background: var(--bg);
-         color: var(--text);
-         font-family: 'Roboto', sans-serif;
-         margin: 0;
-         min-height: 100vh;
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         overflow: hidden;
-         }
-         .logo {
-         font-family: 'Orbitron', sans-serif;
-         font-size: 5.5rem;
-         font-weight: 900;
-         background: linear-gradient(90deg, #ffd700, #ff8c00, #ff4500, #ffd700);
-         -webkit-background-clip: text;
-         -webkit-text-fill-color: transparent;
-         text-shadow: 0 0 20px #ff4500, 0 0 40px #ff8c00;
-         letter-spacing: 8px;
-         margin-bottom: 40px;
-         animation: glow 3s infinite alternate;
-         }
-         @keyframes glow {
-         from { text-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00; }
-         to   { text-shadow: 0 0 30px #ff4500, 0 0 60px #ff8c00, 0 0 90px #ffd700; }
-         }
-         .login-container {
-         background: var(--card-bg);
-         backdrop-filter: blur(12px);
-         padding: 50px 40px;
-         border-radius: 24px;
-         box-shadow: 0 15px 60px var(--shadow);
-         max-width: 460px;
-         width: 92%;
-         text-align: center;
-         border: 2px solid rgba(255, 69, 0, 0.3);
-         }
-         h1 { display: none; } /* Nascondiamo il vecchio h1 */
-         .warning {
-         background: rgba(255, 69, 0, 0.2);
-         color: #ffcc99;
-         padding: 16px;
-         border-radius: 16px;
-         margin: 20px 0;
-         font-size: 1.05rem;
-         border: 1px solid #ff8c00;
-         }
-         .warning a {
-         color: #ffd700;
-         font-weight: bold;
-         text-decoration: underline;
-         }
-         input[type="text"], input[type="password"] {
-         width: 100%;
-         padding: 14px;
-         margin: 12px 0;
-         border: 2px solid rgba(255, 215, 0, 0.3);
-         border-radius: 50px;
-         background: rgba(255,255,255,0.08);
-         color: var(--text);
-         font-size: 1.1rem;
-         }
-         button {
-         background: linear-gradient(90deg, #ff4500, #ff8c00);
-         color: white;
-         border: none;
-         padding: 16px;
-         border-radius: 50px;
-         cursor: pointer;
-         font-weight: bold;
-         margin-top: 25px;
-         width: 100%;
-         font-size: 1.2rem;
-         box-shadow: 0 6px 20px rgba(255, 69, 0, 0.5);
-         transition: all 0.3s;
-         }
-         button:hover {
-         transform: translateY(-3px);
-         box-shadow: 0 12px 30px rgba(255, 69, 0, 0.7);
-         }
-         #errorMsg {
-         color: #ff9999;
-         margin-top: 15px;
-         font-weight: bold;
-         }
-         #themeToggle {
-         position: fixed;
-         bottom: 20px;
-         right: 20px;
-         background: var(--card-bg);
-         border: none;
-         width: 60px;
-         height: 60px;
-         border-radius: 50%;
-         font-size: 1.8rem;
-         cursor: pointer;
-         box-shadow: 0 6px 20px var(--shadow);
-         }
-         /* MODAL REGOLE */
-         .modal {
-         position: fixed;
-         inset: 0;
-         background: rgba(0,0,0,0.9);
-         display: flex;
-         align-items: center;
-         justify-content: center;
-         z-index: 9999;
-         opacity: 0;
-         pointer-events: none;
-         transition: opacity 0.4s;
-         }
-         .modal.active {
-         opacity: 1;
-         pointer-events: all;
-         }
-         .modal-content {
-         background: linear-gradient(135deg, #1a0026, #0b0015);
-         color: #ffd700;
-         padding: 40px;
-         border-radius: 20px;
-         max-width: 580px;
-         width: 90%;
-         text-align: center;
-         border: 3px solid #ff4500;
-         box-shadow: 0 0 60px #ff4500;
-         }
-         .modal h2 {
-         font-family: 'Orbitron', sans-serif;
-         font-size: 2.8rem;
-         margin: 0 0 30px;
-         background: linear-gradient(90deg, #ffd700, #ff8c00);
-         -webkit-background-clip: text;
-         -webkit-text-fill-color: transparent;
-         }
-         .modal ul {
-         list-style: none;
-         padding: 0;
-         font-size: 1.2rem;
-         line-height: 1.8;
-         text-align: left;
-         }
-         .modal li {
-         margin: 15px 0;
-         padding-left: 30px;
-         position: relative;
-         }
-         .modal li::before {
-         content: "⚠️";
-         position: absolute;
-         left: 0;
-         font-size: 1.4rem;
-         }
-         .close-btn {
-         margin-top: 40px;
-         padding: 16px 60px;
-         font-size: 1.3rem;
-         }
-      </style>
-   </head>
-   <body>
-      <div class="logo">THMOVIES</div>
-      <div class="login-container">
-         <div class="warning">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THMOVIES - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #0b0015 0%, #1a0026 100%);
+            --card-bg: rgba(20, 10, 40, 0.88);
+            --text: #ffd700;
+            --accent: #ff4500;
+            --accent-glow: #ff8c00;
+            --shadow: rgba(255, 69, 0, 0.45);
+            --transition: all 0.3s ease;
+        }
+        body.light {
+            --bg: linear-gradient(135deg, #fff8e1 0%, #ffe4b5 100%);
+            --card-bg: rgba(255, 245, 220, 0.92);
+            --text: #8b4513;
+            --accent: #ff4500;
+            --accent-glow: #ff8c00;
+            --shadow: rgba(139, 69, 19, 0.35);
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3.8rem, 9vw, 5.8rem);
+            font-weight: 900;
+            background: linear-gradient(90deg, #ffd700, #ff8c00, #ff4500, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px #ff4500, 0 0 50px #ff8c00;
+            letter-spacing: 6px;
+            margin: 0 0 50px;
+            animation: glow 3.5s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff4500, 0 0 25px #ff8c00; }
+            to   { text-shadow: 0 0 35px #ff4500, 0 0 70px #ff8c00, 0 0 100px #ffd700; }
+        }
+        .login-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            padding: 50px 45px;
+            border-radius: 28px;
+            box-shadow: 0 20px 70px var(--shadow);
+            width: 100%;
+            max-width: 460px;
+            text-align: center;
+            border: 2px solid rgba(255, 69, 0, 0.35);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .warning {
+            background: rgba(255, 69, 0, 0.18);
+            color: #ffcc99;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+            border: 1px solid rgba(255, 140, 0, 0.4);
+        }
+        .warning a {
+            color: #ffd700;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .form-group {
+            position: relative;
+            margin: 20px 0;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 16px 20px 16px 52px;
+            border: 2px solid rgba(255, 215, 0, 0.25);
+            border-radius: 50px;
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+            font-size: 1.1rem;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(255,69,0,0.4);
+        }
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-size: 1.3rem;
+            pointer-events: none;
+        }
+        button[type="submit"] {
+            background: linear-gradient(90deg, #ff4500, #ff8c00);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 30px;
+            width: 100%;
+            font-size: 1.25rem;
+            box-shadow: 0 8px 25px rgba(255, 69, 0, 0.5);
+            transition: var(--transition);
+        }
+        button[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 35px rgba(255, 69, 0, 0.7);
+        }
+        #errorMsg {
+            color: #ff9999;
+            margin-top: 18px;
+            font-weight: 600;
+            min-height: 1.4em;
+        }
+        #themeToggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--card-bg);
+            border: 2px solid rgba(255, 69, 0, 0.3);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            font-size: 1.9rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #themeToggle:hover {
+            transform: scale(1.12) rotate(12deg);
+            border-color: var(--accent);
+        }
+        /* Modal regole */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a0026, #0b0015);
+            color: #ffd700;
+            padding: 45px 35px;
+            border-radius: 24px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            border: 3px solid #ff4500;
+            box-shadow: 0 0 70px rgba(255,69,0,0.6);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo">THMOVIES</div>
+
+    <div class="login-container">
+        <div class="warning">
             <strong>Prima di accedere:</strong><br>
             Installa <a href="https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh" target="_blank" rel="noopener noreferrer">uBlock Origin Lite</a> 
             per bloccare pubblicità fastidiose e script malevoli!
-         </div>
-         <input type="text" id="username" placeholder="Username" autocomplete="off">
-         <input type="password" id="password" placeholder="Password" autocomplete="off">
-         <button onclick="login()">ACCEDI</button>
-         <div id="errorMsg"></div>
-      </div>
-      <!-- MODAL REGOLE -->
-      <div id="rulesModal" class="modal">
-         <div class="modal-content">
+        </div>
+
+        <form id="loginForm" onsubmit="login(event)">
+            <div class="form-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" id="username" placeholder="Username" autocomplete="off" required>
+            </div>
+
+            <div class="form-group">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" id="password" placeholder="Password" autocomplete="off" required>
+            </div>
+
+            <button type="submit">ACCEDI</button>
+        </form>
+
+        <div id="errorMsg" role="alert"></div>
+    </div>
+
+    <!-- Modal regole -->
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
             <h2>REGOLE DI THMOVIES</h2>
-            <ul>
-               <li>Regola 1: NON parlare di THMOVIES fuori da qui</li>
-               <li>Regola 2: NON condividere link o screenshot di THMOVIES</li>
-               <li>Regola 3: Usa SEMPRE un adblocker (uBlock Origin consigliato)</li>
-               <li>Regola 4: Non abusare del servizio o verrà chiuso</li>
+            <ul style="text-align:left; padding-left:0; list-style:none;">
+                <li>⚠️ NON parlare di THMOVIES fuori da qui</li>
+                <li>⚠️ NON condividere link o screenshot</li>
+                <li>⚠️ Usa SEMPRE un adblocker (uBlock Origin consigliato)</li>
+                <li>⚠️ Non abusare del servizio</li>
             </ul>
-            <button class="close-btn" onclick="closeRules()">HO CAPITO - CHIUDI</button>
-         </div>
-      </div>
-      <button id="themeToggle">☀️</button>
-      <script>
-         const CREDS = "dXRlbnRlMTpndXJtYW4=";
-         
-         function login() {
-             const user = document.getElementById("username").value.trim();
-             const pass = document.getElementById("password").value.trim();
-             const error = document.getElementById("errorMsg");
-         
-             if (!user || !pass) {
-                 error.textContent = "Inserisci username e password!";
-                 return;
-             }
-         
-             const decoded = atob(CREDS);
-             const [u, p] = decoded.split(":");
-             if (user === u && pass === p) {
-                 localStorage.setItem("authenticated", "true");
-                 localStorage.setItem("rulesShown", "false"); // Reset per mostrare regole al prossimo login
-                 window.location.href = "home.html";
-             } else {
-                 error.textContent = "Credenziali errate!";
-             }
-         if (user === u && pass === p) {
-         localStorage.setItem("authenticated", "true");
-         localStorage.setItem("showRulesOnLoad", "true");  // ← Flag per mostrare regole al caricamento di index
-         window.location.href = "home.html";
-         
-         }
-         }
-         
-         function closeRules() {
-             document.getElementById("rulesModal").classList.remove("active");
-         }
-         
-         document.getElementById("themeToggle").onclick = () => {
-             document.body.classList.toggle("light");
-             document.getElementById("themeToggle").textContent = document.body.classList.contains("light") ? "🌙" : "☀️";
-         };
-         
-         window.onload = () => {
-             if (localStorage.getItem("authenticated") === "true") {
-                 window.location.href = "home.html";
-             }
-         };
-      </script>
-   </body>
+            <button class="close-btn" onclick="closeRules()" style="margin-top:35px; padding:16px 60px; font-size:1.25rem;">
+                HO CAPITO - CHIUDI
+            </button>
+        </div>
+    </div>
+
+    <button id="themeToggle" aria-label="Cambia tema">☀️</button>
+
+    <script>
+        const CREDS = "dXRlbnRlMTpndXJtYW4=";
+
+        function login(e) {
+            if (e) e.preventDefault();
+            
+            const user = document.getElementById("username").value.trim();
+            const pass = document.getElementById("password").value.trim();
+            const error = document.getElementById("errorMsg");
+
+            if (!user || !pass) {
+                error.textContent = "Inserisci username e password!";
+                return;
+            }
+
+            const decoded = atob(CREDS);
+            const [u, p] = decoded.split(":");
+
+            if (user === u && pass === p) {
+                localStorage.setItem("authenticated", "true");
+                localStorage.setItem("showRulesOnLoad", "true");
+                window.location.href = "home.html";
+            } else {
+                error.textContent = "Credenziali errate!";
+            }
+        }
+
+        function closeRules() {
+            document.getElementById("rulesModal").classList.remove("active");
+        }
+
+        // Theme toggle
+        document.getElementById("themeToggle").onclick = () => {
+            document.body.classList.toggle("light");
+            const isLight = document.body.classList.contains("light");
+            document.getElementById("themeToggle").textContent = isLight ? "🌙" : "☀️";
+            localStorage.setItem("theme", isLight ? "light" : "dark");
+        };
+
+        // Carica tema salvato
+        window.addEventListener("load", () => {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light");
+                document.getElementById("themeToggle").textContent = "🌙";
+            }
+
+            // Se già autenticato → redirect
+            if (localStorage.getItem("authenticated") === "true") {
+                window.location.href = "home.html";
+            }
+        });
+
+        // INVIO da entrambi i campi → login
+        document.getElementById("username").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                login();
+            }
+        });
+
+        document.getElementById("password").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                login();
+            }
+        });
+    </script>
+</body>
 </html>
