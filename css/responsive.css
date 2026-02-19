@@ -1,0 +1,313 @@
+/* ============================================
+   THMOVIES - Responsive Design (Mobile-first)
+   ============================================ */
+
+/* ---- Small phones (up to 480px) ---- */
+@media (max-width: 480px) {
+    :root {
+        --navbar-height: 56px;
+    }
+
+    .navbar {
+        padding: 0 var(--space-md);
+    }
+
+    .navbar-brand-text {
+        font-size: var(--fs-md);
+        letter-spacing: 1px;
+    }
+
+    .navbar-tabs {
+        display: none;
+    }
+
+    .hero {
+        height: 50vh;
+        min-height: 300px;
+        padding: var(--space-lg) var(--space-md);
+    }
+
+    .hero-title {
+        font-size: clamp(1.3rem, 5vw, 1.8rem);
+    }
+
+    .hero-overview {
+        -webkit-line-clamp: 2;
+        font-size: var(--fs-sm);
+    }
+
+    .hero-btn {
+        padding: 10px 20px;
+        font-size: var(--fs-sm);
+    }
+
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: var(--space-sm);
+        padding: var(--space-sm);
+    }
+
+    .search-bar-container {
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .search-bar input {
+        padding: 12px 40px 12px 40px;
+        font-size: var(--fs-sm);
+    }
+
+    .episode-selector {
+        flex-direction: column;
+        align-items: stretch;
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .episode-selector select {
+        min-width: 100%;
+    }
+
+    .player-section {
+        padding: 0 var(--space-sm);
+    }
+
+    .player-controls {
+        flex-direction: column;
+    }
+
+    .player-controls .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .media-detail {
+        margin: var(--space-sm);
+        padding: var(--space-md);
+    }
+
+    .media-detail-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .media-detail-meta {
+        justify-content: center;
+    }
+
+    .filter-bar {
+        padding: 0 var(--space-md);
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+
+    .filter-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .toast-container {
+        left: var(--space-sm);
+        right: var(--space-sm);
+    }
+
+    .toast {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .section-header {
+        padding: 0 var(--space-md);
+    }
+
+    .content-row {
+        padding: 0 var(--space-md);
+    }
+
+    .action-buttons {
+        padding: var(--space-sm) var(--space-md);
+    }
+}
+
+/* Mobile bottom navigation */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(20, 20, 20, 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--surface-border);
+    z-index: var(--z-sticky);
+    padding: 0;
+}
+
+.mobile-nav-items {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 100%;
+    padding: 0 var(--space-sm);
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--space-xs);
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 600;
+    transition: color var(--transition-fast);
+    min-width: 56px;
+}
+
+.mobile-nav-item i {
+    font-size: 1.2rem;
+}
+
+.mobile-nav-item.active {
+    color: var(--accent);
+}
+
+.mobile-nav-item:hover {
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .mobile-nav {
+        display: block;
+    }
+
+    .navbar-tabs {
+        display: none;
+    }
+
+    .main-content {
+        padding-bottom: 70px;
+    }
+
+    .scroll-top {
+        bottom: 76px;
+    }
+}
+
+/* ---- Tablets (481px - 768px) ---- */
+@media (min-width: 481px) and (max-width: 768px) {
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .hero {
+        height: 55vh;
+    }
+
+    .media-detail-header {
+        gap: var(--space-md);
+    }
+
+    .episode-selector {
+        justify-content: center;
+    }
+}
+
+/* ---- Desktop (769px - 1024px) ---- */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+/* ---- Large Desktop (1025px+) ---- */
+@media (min-width: 1025px) {
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: var(--space-lg);
+    }
+
+    .media-card-horizontal {
+        width: 180px;
+    }
+
+    .hero {
+        height: 65vh;
+        max-height: 700px;
+    }
+}
+
+/* ---- Ultra-wide (1400px+) ---- */
+@media (min-width: 1400px) {
+    .content-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+/* ---- Hover vs Touch ---- */
+@media (hover: none) {
+    .media-card-overlay {
+        opacity: 1;
+        background: linear-gradient(to top,
+            rgba(0,0,0,0.8) 0%,
+            transparent 50%);
+    }
+
+    .fav-btn {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .provider-badge {
+        opacity: 1;
+    }
+}
+
+/* ---- Reduced Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---- High Contrast ---- */
+@media (prefers-contrast: high) {
+    :root {
+        --surface-border: rgba(255, 255, 255, 0.3);
+        --text-secondary: #cccccc;
+        --text-muted: #aaaaaa;
+    }
+}
+
+/* ---- Print ---- */
+@media print {
+    .navbar,
+    .mobile-nav,
+    .scroll-top,
+    .toast-container,
+    .player-section,
+    .trailer-modal,
+    .page-loader {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .main-content {
+        padding-top: 0;
+    }
+}
