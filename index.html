@@ -32,10 +32,14 @@
         <span class="login-logo-text" style="display:none;">THMOVIES</span>
     </div>
 
-    <!-- Login Card -->
+    <!-- Auth Card -->
     <div class="login-card">
-        <h2>Bentornato</h2>
-        <p class="subtitle">Accedi per continuare a guardare</p>
+        <!-- Tab Switcher -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLogin" data-tab="login">ACCEDI</button>
+            <button class="auth-tab" id="tabRegister" data-tab="register">REGISTRATI</button>
+            <div class="auth-tab-indicator" id="tabIndicator"></div>
+        </div>
 
         <!-- Ad blocker warning -->
         <div class="login-warning">
@@ -47,16 +51,16 @@
             </span>
         </div>
 
-        <!-- Login Form -->
-        <form id="loginForm" class="login-form" autocomplete="off">
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="auth-form" autocomplete="off">
             <div class="input-group">
-                <input type="text" id="username" placeholder="Username" autocomplete="off" required>
+                <input type="text" id="loginUsername" placeholder="Username" autocomplete="off" required>
                 <i class="fas fa-user input-icon"></i>
             </div>
             <div class="input-group">
-                <input type="password" id="password" placeholder="Password" autocomplete="off" required>
+                <input type="password" id="loginPassword" placeholder="Password" autocomplete="off" required>
                 <i class="fas fa-lock input-icon"></i>
-                <button type="button" class="password-toggle" id="togglePassword" aria-label="Mostra password">
+                <button type="button" class="password-toggle" data-target="loginPassword" aria-label="Mostra password">
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
@@ -66,7 +70,48 @@
             </button>
         </form>
 
+        <!-- REGISTER FORM -->
+        <form id="registerForm" class="auth-form hidden" autocomplete="off">
+            <div class="input-group">
+                <input type="text" id="regUsername" placeholder="Username" autocomplete="off" required
+                       pattern="[a-zA-Z0-9_]{3,20}" title="3-20 caratteri: lettere, numeri, underscore">
+                <i class="fas fa-user input-icon"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" id="regPassword" placeholder="Password (min. 6 caratteri)" autocomplete="new-password" required
+                       minlength="6">
+                <i class="fas fa-lock input-icon"></i>
+                <button type="button" class="password-toggle" data-target="regPassword" aria-label="Mostra password">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <div class="input-group">
+                <input type="password" id="regPasswordConfirm" placeholder="Conferma password" autocomplete="new-password" required>
+                <i class="fas fa-lock input-icon"></i>
+            </div>
+
+            <!-- Password strength indicator -->
+            <div class="password-strength hidden" id="passwordStrength">
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <span class="strength-text" id="strengthText"></span>
+            </div>
+
+            <button type="submit" class="login-btn" id="registerBtn">
+                <span class="btn-text">REGISTRATI</span>
+                <span class="spinner"></span>
+            </button>
+
+            <!-- Registration unavailable notice -->
+            <div class="register-notice hidden" id="registerNotice">
+                <i class="fas fa-info-circle"></i>
+                <span>Registrazione non disponibile. Usa le credenziali fornite per accedere.</span>
+            </div>
+        </form>
+
         <div id="errorMsg" class="login-error" role="alert" aria-live="assertive"></div>
+        <div id="successMsg" class="login-success" role="status" aria-live="polite"></div>
     </div>
 
     <!-- Theme Toggle -->
@@ -88,42 +133,96 @@
         </div>
     </div>
 
+    <!-- Firebase SDK (loaded before our scripts) -->
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script>
-        // DOM references
-        const loginForm = document.getElementById('loginForm');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const errorMsg = document.getElementById('errorMsg');
-        const togglePassword = document.getElementById('togglePassword');
-        const themeToggle = document.getElementById('themeToggle');
-        const rulesModal = document.getElementById('rulesModal');
-        const closeRulesBtn = document.getElementById('closeRulesBtn');
+        // =============================================
+        // DOM References
+        // =============================================
+        const dom = {
+            tabLogin: document.getElementById('tabLogin'),
+            tabRegister: document.getElementById('tabRegister'),
+            tabIndicator: document.getElementById('tabIndicator'),
+            loginForm: document.getElementById('loginForm'),
+            registerForm: document.getElementById('registerForm'),
+            loginUsername: document.getElementById('loginUsername'),
+            loginPassword: document.getElementById('loginPassword'),
+            loginBtn: document.getElementById('loginBtn'),
+            regUsername: document.getElementById('regUsername'),
+            regPassword: document.getElementById('regPassword'),
+            regPasswordConfirm: document.getElementById('regPasswordConfirm'),
+            registerBtn: document.getElementById('registerBtn'),
+            registerNotice: document.getElementById('registerNotice'),
+            errorMsg: document.getElementById('errorMsg'),
+            successMsg: document.getElementById('successMsg'),
+            themeToggle: document.getElementById('themeToggle'),
+            rulesModal: document.getElementById('rulesModal'),
+            closeRulesBtn: document.getElementById('closeRulesBtn'),
+            passwordStrength: document.getElementById('passwordStrength'),
+            strengthFill: document.getElementById('strengthFill'),
+            strengthText: document.getElementById('strengthText')
+        };
 
-        // Check if already authenticated
+        let currentTab = 'login';
+
+        // =============================================
+        // Redirect if already authenticated
+        // =============================================
         if (Auth.isAuthenticated()) {
             window.location.href = 'home.html';
         }
 
-        // Login form handler
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorMsg.textContent = '';
+        // =============================================
+        // Tab Switching
+        // =============================================
+        function switchTab(tab) {
+            currentTab = tab;
+            clearMessages();
 
-            const user = usernameInput.value.trim();
-            const pass = passwordInput.value.trim();
+            dom.tabLogin.classList.toggle('active', tab === 'login');
+            dom.tabRegister.classList.toggle('active', tab === 'register');
+
+            // Animate indicator
+            dom.tabIndicator.style.transform = tab === 'register' ? 'translateX(100%)' : 'translateX(0)';
+
+            // Show/hide forms with animation
+            dom.loginForm.classList.toggle('hidden', tab !== 'login');
+            dom.registerForm.classList.toggle('hidden', tab !== 'register');
+
+            // Check if registration is available
+            if (tab === 'register' && !Auth.canRegister()) {
+                dom.registerNotice.classList.remove('hidden');
+                dom.registerBtn.disabled = true;
+            } else {
+                dom.registerNotice.classList.add('hidden');
+                dom.registerBtn.disabled = false;
+            }
+        }
+
+        dom.tabLogin.addEventListener('click', () => switchTab('login'));
+        dom.tabRegister.addEventListener('click', () => switchTab('register'));
+
+        // =============================================
+        // Login Handler
+        // =============================================
+        dom.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+
+            const user = dom.loginUsername.value.trim();
+            const pass = dom.loginPassword.value.trim();
 
             if (!user || !pass) {
                 showError('Inserisci username e password!');
                 return;
             }
 
-            // Show loading state
-            loginBtn.classList.add('loading');
-            loginBtn.disabled = true;
+            setLoading(dom.loginBtn, true);
 
             const result = await Auth.login(user, pass);
 
@@ -131,32 +230,144 @@
                 window.location.href = 'home.html';
             } else {
                 showError(result.error);
-                loginBtn.classList.remove('loading');
-                loginBtn.disabled = false;
-
-                // Shake animation on card
-                const card = document.querySelector('.login-card');
-                card.style.animation = 'none';
-                card.offsetHeight; // Force reflow
-                card.style.animation = 'shake 0.4s ease-in-out';
+                setLoading(dom.loginBtn, false);
+                shakeCard();
             }
         });
 
-        function showError(msg) {
-            errorMsg.textContent = msg;
-            errorMsg.style.animation = 'none';
-            errorMsg.offsetHeight;
-            errorMsg.style.animation = 'shake 0.4s ease-in-out';
-        }
+        // =============================================
+        // Register Handler
+        // =============================================
+        dom.registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
 
-        // Password visibility toggle
-        togglePassword.addEventListener('click', () => {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            togglePassword.innerHTML = `<i class="fas fa-eye${isPassword ? '-slash' : ''}"></i>`;
+            const user = dom.regUsername.value.trim();
+            const pass = dom.regPassword.value;
+            const passConfirm = dom.regPasswordConfirm.value;
+
+            if (!user || !pass || !passConfirm) {
+                showError('Compila tutti i campi!');
+                return;
+            }
+
+            // Username validation
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            if (!usernameRegex.test(user)) {
+                showError('Username: 3-20 caratteri, solo lettere, numeri e underscore.');
+                return;
+            }
+
+            if (pass.length < 6) {
+                showError('La password deve avere almeno 6 caratteri.');
+                return;
+            }
+
+            if (pass !== passConfirm) {
+                showError('Le password non corrispondono!');
+                return;
+            }
+
+            setLoading(dom.registerBtn, true);
+
+            const result = await Auth.register(user, pass);
+
+            if (result.success) {
+                showSuccess('Account creato! Reindirizzamento...');
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1200);
+            } else {
+                showError(result.error);
+                setLoading(dom.registerBtn, false);
+                shakeCard();
+            }
         });
 
-        // Theme toggle
+        // =============================================
+        // Password Strength Meter
+        // =============================================
+        dom.regPassword.addEventListener('input', () => {
+            const pass = dom.regPassword.value;
+            const strength = calcPasswordStrength(pass);
+
+            if (pass.length === 0) {
+                dom.passwordStrength.classList.add('hidden');
+                return;
+            }
+            dom.passwordStrength.classList.remove('hidden');
+
+            const colors = ['#e50914', '#ff6b35', '#ffc107', '#4caf50'];
+            const labels = ['Debole', 'Discreta', 'Buona', 'Forte'];
+
+            const level = Math.min(strength, 3);
+            dom.strengthFill.style.width = `${((level + 1) / 4) * 100}%`;
+            dom.strengthFill.style.background = colors[level];
+            dom.strengthText.textContent = labels[level];
+            dom.strengthText.style.color = colors[level];
+        });
+
+        function calcPasswordStrength(pass) {
+            let score = 0;
+            if (pass.length >= 6) score++;
+            if (pass.length >= 10) score++;
+            if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score++;
+            if (/[0-9]/.test(pass)) score++;
+            if (/[^a-zA-Z0-9]/.test(pass)) score++;
+            return Math.min(Math.floor(score * 0.75), 3);
+        }
+
+        // =============================================
+        // Password Visibility Toggles
+        // =============================================
+        document.querySelectorAll('.password-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                btn.innerHTML = `<i class="fas fa-eye${isPassword ? '-slash' : ''}"></i>`;
+            });
+        });
+
+        // =============================================
+        // UI Helpers
+        // =============================================
+        function showError(msg) {
+            dom.errorMsg.textContent = msg;
+            dom.successMsg.textContent = '';
+            dom.errorMsg.style.animation = 'none';
+            dom.errorMsg.offsetHeight;
+            dom.errorMsg.style.animation = 'shake 0.4s ease-in-out';
+        }
+
+        function showSuccess(msg) {
+            dom.successMsg.textContent = msg;
+            dom.errorMsg.textContent = '';
+        }
+
+        function clearMessages() {
+            dom.errorMsg.textContent = '';
+            dom.successMsg.textContent = '';
+        }
+
+        function setLoading(btn, loading) {
+            btn.classList.toggle('loading', loading);
+            btn.disabled = loading;
+        }
+
+        function shakeCard() {
+            const card = document.querySelector('.login-card');
+            card.style.animation = 'none';
+            card.offsetHeight;
+            card.style.animation = 'shake 0.4s ease-in-out';
+        }
+
+        // =============================================
+        // Theme Toggle
+        // =============================================
         (function initTheme() {
             const saved = localStorage.getItem('theme');
             if (saved === 'light') {
@@ -165,7 +376,7 @@
             updateIcon();
         })();
 
-        themeToggle.addEventListener('click', () => {
+        dom.themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('light');
             const isLight = document.body.classList.contains('light');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
@@ -174,22 +385,32 @@
 
         function updateIcon() {
             const isLight = document.body.classList.contains('light');
-            themeToggle.innerHTML = isLight
+            dom.themeToggle.innerHTML = isLight
                 ? '<i class="fas fa-moon"></i>'
                 : '<i class="fas fa-sun"></i>';
         }
 
-        // Rules modal
-        if (closeRulesBtn) {
-            closeRulesBtn.addEventListener('click', () => {
-                rulesModal.classList.remove('active');
+        // =============================================
+        // Rules Modal
+        // =============================================
+        if (dom.closeRulesBtn) {
+            dom.closeRulesBtn.addEventListener('click', () => {
+                dom.rulesModal.classList.remove('active');
             });
         }
 
+        // =============================================
         // Enter key handler
-        [usernameInput, passwordInput].forEach(input => {
+        // =============================================
+        [dom.loginUsername, dom.loginPassword].forEach(input => {
             input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') loginForm.requestSubmit();
+                if (e.key === 'Enter') dom.loginForm.requestSubmit();
+            });
+        });
+
+        [dom.regUsername, dom.regPassword, dom.regPasswordConfirm].forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') dom.registerForm.requestSubmit();
             });
         });
     </script>

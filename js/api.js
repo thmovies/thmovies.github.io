@@ -71,14 +71,14 @@ const API = (() => {
         return fetchWithCache(url);
     }
 
-    // Get popular content
-    async function getPopular(type) {
+    // Get popular content (with pagination)
+    async function getPopular(type, page = 1) {
         const endpoint = type === 'movie' ? 'movie' : 'tv';
         let extra = '';
         if (type === 'anime') {
             extra = '&with_genres=16&with_keywords=210024&with_original_language=ja';
         }
-        const url = `${CONFIG.TMDB_BASE}/discover/${endpoint}?language=${CONFIG.TMDB_LANG}&sort_by=popularity.desc${extra}`;
+        const url = `${CONFIG.TMDB_BASE}/discover/${endpoint}?language=${CONFIG.TMDB_LANG}&sort_by=popularity.desc&page=${page}${extra}`;
         return fetchWithCache(url);
     }
 
@@ -121,6 +121,42 @@ const API = (() => {
             : 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" fill="%231a1a1a"><rect width="300" height="450"/><text x="150" y="225" text-anchor="middle" fill="%23555" font-size="16" font-family="sans-serif">No Image</text></svg>');
     }
 
+    // Get similar titles
+    async function getSimilar(type, id) {
+        const endpoint = type === 'movie' ? 'movie' : 'tv';
+        const url = `${CONFIG.TMDB_BASE}/${endpoint}/${id}/similar?language=${CONFIG.TMDB_LANG}`;
+        return fetchWithCache(url);
+    }
+
+    // Get top rated
+    async function getTopRated(type) {
+        const endpoint = type === 'movie' ? 'movie' : 'tv';
+        let extra = '';
+        if (type === 'anime') {
+            extra = '&with_genres=16&with_keywords=210024&with_original_language=ja';
+        }
+        const url = `${CONFIG.TMDB_BASE}/${endpoint}/top_rated?language=${CONFIG.TMDB_LANG}${extra}`;
+        return fetchWithCache(url);
+    }
+
+    // Get popular by genre (with pagination)
+    async function getPopularByGenre(type, genreId, page = 1) {
+        const endpoint = type === 'movie' ? 'movie' : 'tv';
+        let extra = genreId ? `&with_genres=${genreId}` : '';
+        if (type === 'anime') {
+            extra += '&with_genres=16&with_keywords=210024&with_original_language=ja';
+        }
+        const url = `${CONFIG.TMDB_BASE}/discover/${endpoint}?language=${CONFIG.TMDB_LANG}&sort_by=popularity.desc&page=${page}${extra}`;
+        return fetchWithCache(url);
+    }
+
+    // Get cast/credits
+    async function getCredits(type, id) {
+        const endpoint = type === 'movie' ? 'movie' : 'tv';
+        const url = `${CONFIG.TMDB_BASE}/${endpoint}/${id}/credits?language=${CONFIG.TMDB_LANG}`;
+        return fetchWithCache(url);
+    }
+
     return {
         search,
         searchWithGenre,
@@ -129,6 +165,10 @@ const API = (() => {
         getDetails,
         getVideos,
         getSeasonDetails,
+        getSimilar,
+        getTopRated,
+        getPopularByGenre,
+        getCredits,
         getImageUrl,
         getPosterUrl
     };

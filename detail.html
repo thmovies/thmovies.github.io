@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="THMovies - Dettaglio media">
+    <meta name="theme-color" content="#141414">
+    <title>Dettaglio - THMovies</title>
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/player.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div class="page-loader">
+        <div class="page-loader-logo">THMOVIES</div>
+        <div class="page-loader-bar"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" role="navigation">
+        <a href="home.html" class="navbar-brand-link">
+            <span class="navbar-brand-text">THMOVIES</span>
+        </a>
+        <div class="navbar-tabs">
+            <a class="nav-tab" href="movies.html"><i class="fas fa-film"></i> Film</a>
+            <a class="nav-tab" href="tv.html"><i class="fas fa-tv"></i> Serie TV</a>
+            <a class="nav-tab" href="anime.html"><i class="fas fa-dragon"></i> Anime</a>
+            <a class="nav-tab" href="favorites.html"><i class="far fa-heart"></i> Preferiti</a>
+        </div>
+        <div class="navbar-actions">
+            <a href="profile.html" class="profile-btn" aria-label="Profilo"><i class="fas fa-user"></i></a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Cambia tema"><i class="fas fa-sun"></i></button>
+            <button class="logout-btn" aria-label="Logout"><i class="fas fa-sign-out-alt"></i> Esci</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Backdrop -->
+        <div id="detailBackdrop" class="detail-backdrop"></div>
+
+        <!-- Info Grid -->
+        <div id="detailInfoGrid" class="detail-info-grid">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Episode Selector (TV/Anime only) -->
+        <div id="episodeSelectorSection" class="episode-selector hidden" style="padding: var(--space-md) var(--space-lg);">
+            <select id="seasonSelect" aria-label="Seleziona stagione">
+                <option value="">Stagione...</option>
+            </select>
+            <select id="episodeSelect" aria-label="Seleziona episodio">
+                <option value="">Episodio...</option>
+            </select>
+            <select id="langSelect" aria-label="Seleziona lingua">
+                <!-- Populated by JS based on type -->
+            </select>
+        </div>
+        <!-- Language info note -->
+        <p id="langNote" class="lang-note hidden" style="padding: 0 var(--space-lg); margin-top: calc(var(--space-sm) * -1); font-size: var(--fs-xs); color: var(--text-muted); font-style: italic;"></p>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons" id="actionButtons">
+            <button id="playBtn" class="btn btn-primary btn-lg btn-full" disabled>
+                <i class="fas fa-play"></i> Riproduci
+            </button>
+            <button id="trailerBtn" class="btn btn-secondary btn-full hidden" disabled>
+                <i class="fas fa-film"></i> Guarda Trailer
+            </button>
+            <button id="favBtn" class="btn btn-ghost btn-full">
+                <i class="far fa-heart"></i> <span id="favBtnText">Aggiungi ai Preferiti</span>
+            </button>
+            <button id="retryBtn" class="btn btn-ghost btn-full hidden">
+                <i class="fas fa-redo"></i> Riprova (prossimo provider)
+            </button>
+            <button id="openTabBtn" class="btn btn-ghost btn-full hidden">
+                <i class="fas fa-external-link-alt"></i> Apri in nuova scheda
+            </button>
+        </div>
+
+        <!-- Player -->
+        <section class="player-section">
+            <div class="player-container">
+                <div class="provider-badge" id="providerBadge">
+                    <span class="dot"></span>
+                    <span id="providerName"></span>
+                </div>
+                <div class="player-loading" id="playerLoading">
+                    <div class="player-loader"></div>
+                    <span class="player-loading-text" id="playerLoadingText">Caricamento...</span>
+                </div>
+                <iframe id="player" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
+            </div>
+        </section>
+
+        <!-- Cast Section -->
+        <div id="castSection" class="cast-section hidden">
+            <h2 class="section-title"><i class="fas fa-users"></i> Cast</h2>
+            <div id="castCarousel" class="cast-carousel"></div>
+        </div>
+
+        <!-- Similar Titles -->
+        <div id="similarSection" class="similar-section hidden reveal">
+            <div class="section-header" style="padding: 0; margin-bottom: var(--space-md);">
+                <h2 class="section-title"><i class="fas fa-th-large"></i> Titoli Simili</h2>
+            </div>
+            <div id="similarGrid" class="content-grid" style="padding: 0;"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-brand">THMOVIES</div>
+            <p>Film, Serie TV e Anime in streaming.</p>
+        </footer>
+    </main>
+
+    <!-- Trailer Modal -->
+    <div id="trailerModal" class="trailer-modal" role="dialog" aria-modal="true" aria-label="Trailer">
+        <div class="trailer-wrapper">
+            <button class="trailer-close" aria-label="Chiudi trailer">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="trailer-video">
+                <iframe id="trailerPlayer" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <button class="scroll-top" aria-label="Torna su"><i class="fas fa-chevron-up"></i></button>
+
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav" aria-label="Navigazione mobile">
+        <div class="mobile-nav-items">
+            <a class="mobile-nav-item" href="movies.html"><i class="fas fa-film"></i><span>Film</span></a>
+            <a class="mobile-nav-item" href="tv.html"><i class="fas fa-tv"></i><span>Serie TV</span></a>
+            <a class="mobile-nav-item" href="anime.html"><i class="fas fa-dragon"></i><span>Anime</span></a>
+            <a class="mobile-nav-item" href="favorites.html"><i class="far fa-heart"></i><span>Preferiti</span></a>
+            <button class="mobile-nav-item" id="themeToggleMobile"><i class="fas fa-sun"></i><span>Tema</span></button>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/detail-page.js"></script>
+</body>
+</html>

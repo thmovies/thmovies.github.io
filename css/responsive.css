@@ -126,6 +126,80 @@
     .action-buttons {
         padding: var(--space-sm) var(--space-md);
     }
+
+    /* Detail page mobile */
+    .detail-info-grid {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -80px;
+        padding: var(--space-md);
+    }
+
+    .detail-poster {
+        width: 150px;
+    }
+
+    .detail-title {
+        font-size: clamp(1.3rem, 5vw, 1.8rem);
+    }
+
+    .detail-meta {
+        justify-content: center;
+    }
+
+    .detail-genres {
+        justify-content: center;
+    }
+
+    .detail-actions {
+        justify-content: center;
+    }
+
+    .cast-card {
+        width: 90px;
+    }
+
+    .cast-photo {
+        width: 70px;
+        height: 70px;
+    }
+
+    /* Profile page mobile */
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Browse page mobile */
+    .browse-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md);
+    }
+
+    .genre-filter-bar {
+        padding: var(--space-sm) var(--space-md);
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+
+    .genre-filter-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Favorites page mobile */
+    .favorites-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: var(--space-md);
+    }
 }
 
 /* Mobile bottom navigation */
@@ -210,6 +284,18 @@
 
     .episode-selector {
         justify-content: center;
+    }
+
+    .detail-info-grid {
+        gap: var(--space-lg);
+    }
+
+    .detail-poster {
+        width: 180px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 

@@ -1,6 +1,7 @@
 /* ============================================
    THMOVIES - Player Module
    Video player, provider rotation, trailer
+   Language-aware provider sorting & URL building
    ============================================ */
 
 const Player = (() => {
@@ -44,7 +45,94 @@ const Player = (() => {
         if (container) container.classList.remove('active');
     }
 
+    // =============================================
+    // Build the full URL for a provider + language
+    // Handles subtitleParam (ds_lang) and dubParam (?dub=0/1)
+    // =============================================
+    function buildProviderUrl(provider, id, season, episode, lang, type) {
+        // Build base URL
+        let url;
+        if (type === 'movie') {
+            url = provider.url(id);
+        } else {
+            url = provider.url(id, season, episode);
+        }
+
+        if (!lang) return url;
+
+        // --- ANIME: dub/sub handling ---
+        if (type === 'anime') {
+            if (provider.dubParam) {
+                // VidSrc.icu style: ?dub=0 (sub) / ?dub=1 (dub)
+                const separator = url.includes('?') ? '&' : '?';
+                if (lang === 'sub' || lang === 'ja') {
+                    url += `${separator}dub=0`;
+                } else if (lang === 'dub' || lang === 'en') {
+                    url += `${separator}dub=1`;
+                }
+                return url;
+            }
+
+            if (provider.subtitleParam) {
+                // VidSrc.cc style: ds_lang for default subtitles
+                const separator = url.includes('?') ? '&' : '?';
+                if (lang === 'sub' || lang === 'ja') {
+                    url += `${separator}${provider.subtitleParam}=en`;
+                } else if (lang === 'it') {
+                    url += `${separator}${provider.subtitleParam}=it`;
+                }
+                return url;
+            }
+
+            // Provider doesn't support lang params
+            return url;
+        }
+
+        // --- MOVIE / TV: subtitle handling ---
+        if (provider.subtitleParam && lang) {
+            const separator = url.includes('?') ? '&' : '?';
+            url += `${separator}${provider.subtitleParam}=${lang}`;
+        }
+
+        return url;
+    }
+
+    // =============================================
+    // Sort providers: lang-aware come first
+    // =============================================
+    function sortProvidersByLang(providers, lang, type) {
+        if (!lang) return [...providers]; // No sorting needed
+
+        return [...providers].sort((a, b) => {
+            const aScore = getProviderLangScore(a, lang, type);
+            const bScore = getProviderLangScore(b, lang, type);
+            return bScore - aScore; // Higher score first
+        });
+    }
+
+    function getProviderLangScore(provider, lang, type) {
+        let score = 0;
+
+        // Anime: providers with dubParam get highest score for sub/dub
+        if (type === 'anime' && (lang === 'sub' || lang === 'dub' || lang === 'ja' || lang === 'en')) {
+            if (provider.dubParam) score += 10;
+        }
+
+        // Provider with subtitleParam supports subtitle language setting
+        if (provider.subtitleParam) score += 5;
+
+        // Provider that supports 'multi' audio
+        if (provider.langs.includes('multi')) score += 3;
+
+        // Provider supports the exact requested language
+        if (provider.langs.includes(lang)) score += 2;
+
+        return score;
+    }
+
+    // =============================================
     // Load player with provider rotation
+    // =============================================
     async function load(state) {
         const { id, type, season, episode, lang } = state;
         if (!id) {
@@ -59,8 +147,11 @@ const Player = (() => {
 
         if (!playerFrame) init();
 
-        const providerList = CONFIG.PROVIDERS[type];
-        if (!providerList) return false;
+        const rawProviders = CONFIG.PROVIDERS[type];
+        if (!rawProviders) return false;
+
+        // Sort providers by language compatibility
+        const providerList = sortProvidersByLang(rawProviders, lang, type);
 
         showLoading(true);
 
@@ -72,19 +163,12 @@ const Player = (() => {
         for (let i = currentProviderIndex; i < providerList.length; i++) {
             currentProviderIndex = i;
 
-            const url = type === 'movie'
-                ? providerList[i](id, lang)
-                : providerList[i](id, season, episode, lang);
+            const provider = providerList[i];
+            const url = buildProviderUrl(provider, id, season, episode, lang, type);
+            const displayName = provider.name;
 
-            let hostname;
-            try {
-                hostname = new URL(url).hostname.replace('www.', '');
-            } catch {
-                hostname = `Provider ${i + 1}`;
-            }
-
-            showLoading(true, `Tentativo con ${hostname} (${i + 1}/${providerList.length})...`);
-            updateProviderBadge(hostname, true);
+            showLoading(true, `Tentativo con ${displayName} (${i + 1}/${providerList.length})...`);
+            updateProviderBadge(displayName, true);
 
             playerFrame.src = url;
 
@@ -106,14 +190,23 @@ const Player = (() => {
 
                 success = true;
                 showLoading(false);
-                Toast.success(`Caricato da ${hostname}`);
+
+                // Show language info in toast
+                let langInfo = '';
+                if (lang && provider.dubParam && type === 'anime') {
+                    langInfo = lang === 'dub' || lang === 'en' ? ' (Dub)' : ' (Sub)';
+                } else if (lang && provider.subtitleParam) {
+                    langInfo = ` (sub: ${lang})`;
+                }
+
+                Toast.success(`Caricato da ${displayName}${langInfo}`);
 
                 // Save to watch history
                 WatchHistory.add(state);
 
                 break;
             } catch (err) {
-                Toast.warning(`${hostname} non riuscito. Provo il successivo...`);
+                Toast.warning(`${displayName} non riuscito. Provo il successivo...`);
             }
         }
 
@@ -129,7 +222,8 @@ const Player = (() => {
     }
 
     function retry(state) {
-        currentProviderIndex = (currentProviderIndex + 1) % CONFIG.PROVIDERS[state.type].length;
+        const providerList = CONFIG.PROVIDERS[state.type];
+        currentProviderIndex = (currentProviderIndex + 1) % providerList.length;
         return load(state);
     }
 
@@ -150,8 +244,7 @@ const Player = (() => {
         const trailerPlayer = document.getElementById('trailerPlayer');
 
         if (modal && trailerPlayer) {
-            // Use youtube-nocookie.com to avoid Error 153 (embedding disabled on some videos)
-            // Also add origin param for extra compatibility
+            // Use youtube-nocookie.com to avoid Error 153
             const origin = encodeURIComponent(window.location.origin || 'https://thmovies.app');
             trailerPlayer.src = `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1&controls=1&origin=${origin}&enablejsapi=0`;
             modal.classList.add('active');

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="THMovies - I tuoi preferiti">
+    <meta name="theme-color" content="#141414">
+    <title>Preferiti - THMovies</title>
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/player.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div class="page-loader">
+        <div class="page-loader-logo">THMOVIES</div>
+        <div class="page-loader-bar"></div>
+    </div>
+
+    <nav class="navbar" role="navigation">
+        <a href="home.html" class="navbar-brand-link">
+            <span class="navbar-brand-text">THMOVIES</span>
+        </a>
+        <div class="navbar-tabs">
+            <a class="nav-tab" href="movies.html"><i class="fas fa-film"></i> Film</a>
+            <a class="nav-tab" href="tv.html"><i class="fas fa-tv"></i> Serie TV</a>
+            <a class="nav-tab" href="anime.html"><i class="fas fa-dragon"></i> Anime</a>
+            <a class="nav-tab" href="favorites.html"><i class="far fa-heart"></i> Preferiti</a>
+        </div>
+        <div class="navbar-actions">
+            <a href="profile.html" class="profile-btn" aria-label="Profilo"><i class="fas fa-user"></i></a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Cambia tema"><i class="fas fa-sun"></i></button>
+            <button class="logout-btn" aria-label="Logout"><i class="fas fa-sign-out-alt"></i> Esci</button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Header -->
+        <div class="favorites-page-header">
+            <div>
+                <h1><i class="far fa-heart"></i> I Tuoi Preferiti <span id="favCount" class="fav-count"></span></h1>
+            </div>
+            <div class="favorites-actions">
+                <button id="exportBtn" class="btn btn-ghost"><i class="fas fa-download"></i> Esporta</button>
+                <button id="importBtn" class="btn btn-ghost"><i class="fas fa-upload"></i> Importa</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;">
+            </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div id="favFilterBar" class="genre-filter-bar">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Favorites Grid -->
+        <div id="favoritesGrid" class="content-grid"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-brand">THMOVIES</div>
+            <p>Film, Serie TV e Anime in streaming.</p>
+        </footer>
+    </main>
+
+    <button class="scroll-top" aria-label="Torna su"><i class="fas fa-chevron-up"></i></button>
+
+    <nav class="mobile-nav" aria-label="Navigazione mobile">
+        <div class="mobile-nav-items">
+            <a class="mobile-nav-item" href="movies.html"><i class="fas fa-film"></i><span>Film</span></a>
+            <a class="mobile-nav-item" href="tv.html"><i class="fas fa-tv"></i><span>Serie TV</span></a>
+            <a class="mobile-nav-item" href="anime.html"><i class="fas fa-dragon"></i><span>Anime</span></a>
+            <a class="mobile-nav-item" href="favorites.html"><i class="far fa-heart"></i><span>Preferiti</span></a>
+            <button class="mobile-nav-item" id="themeToggleMobile"><i class="fas fa-sun"></i><span>Tema</span></button>
+        </div>
+    </nav>
+
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/favorites-page.js"></script>
+</body>
+</html>

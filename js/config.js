@@ -16,7 +16,26 @@ const CONFIG = {
     MAX_TRENDING: 20,
     CACHE_TTL_MS: 5 * 60 * 1000, // 5 minutes
 
-    // SHA-256 hashes of "username:password"
+    // =============================================
+    // FIREBASE CONFIGURATION
+    // Replace with your Firebase project credentials
+    // Create a project at https://console.firebase.google.com
+    // Enable Email/Password auth in Authentication > Sign-in method
+    // =============================================
+    FIREBASE_CONFIG: {
+        apiKey: "AIzaSyByHqwiSAyOPdfe5m8CfOSWYmS9fgwE0Fs",
+        authDomain: "thmovies-29cd0.firebaseapp.com",
+        projectId: "thmovies-29cd0",
+        storageBucket: "thmovies-29cd0.firebasestorage.app",
+        messagingSenderId: "1090448112621",
+        appId: "1:1090448112621:web:925999191ca0b5ccc1c5e4",
+        measurementId: "G-SWLG41ZNT3"
+    },
+
+    // Email domain for Firebase Auth (username -> username@domain)
+    FIREBASE_EMAIL_DOMAIN: 'thmovies.app',
+
+    // SHA-256 hashes of "username:password" (local fallback)
     // utente1:gurman
     CREDENTIAL_HASHES: [
         '040ef152c8f070d2c0c89c5a8457e110c08cf5b8a1c852e8b5e79b9a4216030a'
@@ -28,186 +47,187 @@ const CONFIG = {
     ],
 
     // =============================================
-    // STREAMING PROVIDERS
-    // Each provider function receives:
-    //   Movies: (id, lang) where lang = language code string like 'en', 'it', '' (auto)
-    //   TV/Anime: (id, s, e, lang) same lang format
-    //   Anime sub/dub: lang can be 'sub', 'dub', 'ja', 'en', 'it', '' (auto)
+    // STREAMING PROVIDERS (Structured with metadata)
+    //
+    // Each provider object has:
+    //   name:          Display name
+    //   url:           Function that builds the embed URL
+    //                  Movies: (id) => url
+    //                  TV/Anime: (id, s, e) => url
+    //   langs:         Array of audio languages available
+    //                  'multi' = multiple langs, player has own switcher
+    //                  'en' = English only, etc.
+    //   subtitleParam: (optional) URL param name for default subtitle lang (ISO 639-1)
+    //   dubParam:      (optional) true if provider supports ?dub=0/1 for anime sub/dub
     // =============================================
     PROVIDERS: {
         movie: [
-            // VidSrc.cc - best multi-source provider
-            (id, lang) => {
-                let url = `https://vidsrc.cc/v2/embed/movie/${id}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'VidSrc.cc',
+                url: (id) => `https://vidsrc.cc/v2/embed/movie/${id}`,
+                langs: ['multi'],
+                subtitleParam: 'ds_lang'
             },
-            // VidSrc.to - reliable fallback
-            (id, lang) => {
-                let url = `https://vidsrc.to/embed/movie/${id}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'VidSrc.icu',
+                url: (id) => `https://vidsrc.icu/embed/movie/${id}`,
+                langs: ['multi']
             },
-            // 2Embed - widely used
-            (id, lang) => `https://www.2embed.cc/embed/${id}`,
-            // VidLink.pro - clean player
-            (id, lang) => `https://vidlink.pro/movie/${id}?autoplay=true`,
-            // VidSrc.pro
-            (id, lang) => {
-                let url = `https://vidsrc.pro/embed/${id}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'AutoEmbed',
+                url: (id) => `https://autoembed.cc/movie/${id}`,
+                langs: ['en', 'hi', 'multi']
             },
-            // AutoEmbed
-            (id, lang) => {
-                let url = `https://autoembed.cc/movie/${id}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'NontonGo',
+                url: (id) => `https://www.nontongo.win/embed/movie/${id}`,
+                langs: ['multi']
             },
-            // VidSrc.in
-            (id, lang) => {
-                let url = `https://vidsrc.in/embed/movie?tmdb=${id}`;
-                if (lang) url += `&lang=${lang}`;
-                return url;
+            {
+                name: 'MultiEmbed',
+                url: (id) => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
+                langs: ['multi']
             },
-            // MultiEmbed
-            (id, lang) => {
-                let url = `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-                if (lang) url += `&lang=${lang}`;
-                return url;
+            {
+                name: 'VidLink',
+                url: (id) => `https://vidlink.pro/movie/${id}?autoplay=true`,
+                langs: ['en']
             },
-            // MoviesAPI
-            (id, lang) => `https://moviesapi.club/movie/${id}`
+            {
+                name: 'VidSrc.in',
+                url: (id) => `https://vidsrc.in/embed/movie?tmdb=${id}`,
+                langs: ['multi']
+            },
+            {
+                name: '2Embed',
+                url: (id) => `https://www.2embed.cc/embed/${id}`,
+                langs: ['en']
+            },
+            {
+                name: 'MoviesAPI',
+                url: (id) => `https://moviesapi.club/movie/${id}`,
+                langs: ['en']
+            }
         ],
 
         tv: [
-            // VidSrc.cc
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'VidSrc.cc',
+                url: (id, s, e) => `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`,
+                langs: ['multi'],
+                subtitleParam: 'ds_lang'
             },
-            // VidSrc.to
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.to/embed/tv/${id}/${s}/${e}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'VidSrc.icu',
+                url: (id, s, e) => `https://vidsrc.icu/embed/tv/${id}/${s}/${e}`,
+                langs: ['multi']
             },
-            // 2Embed
-            (id, s, e, lang) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
-            // VidLink.pro
-            (id, s, e, lang) => `https://vidlink.pro/tv/${id}/${s}/${e}`,
-            // VidSrc.pro
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.pro/embed/${id}/${s}/${e}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'AutoEmbed',
+                url: (id, s, e) => `https://autoembed.cc/tv/${id}/${s}/${e}`,
+                langs: ['en', 'hi', 'multi']
             },
-            // AutoEmbed
-            (id, s, e, lang) => {
-                let url = `https://autoembed.cc/tv/${id}/${s}/${e}`;
-                if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'NontonGo',
+                url: (id, s, e) => `https://www.nontongo.win/embed/tv/${id}/${s}/${e}`,
+                langs: ['multi']
             },
-            // VidSrc.in
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}`;
-                if (lang) url += `&lang=${lang}`;
-                return url;
+            {
+                name: 'MultiEmbed',
+                url: (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
+                langs: ['multi']
             },
-            // MultiEmbed
-            (id, s, e, lang) => {
-                let url = `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`;
-                if (lang) url += `&lang=${lang}`;
-                return url;
+            {
+                name: 'VidLink',
+                url: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}`,
+                langs: ['en']
             },
-            // MoviesAPI
-            (id, s, e, lang) => `https://moviesapi.club/tv/${id}-${s}-${e}`
+            {
+                name: 'VidSrc.in',
+                url: (id, s, e) => `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}`,
+                langs: ['multi']
+            },
+            {
+                name: '2Embed',
+                url: (id, s, e) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
+                langs: ['en']
+            },
+            {
+                name: 'MoviesAPI',
+                url: (id, s, e) => `https://moviesapi.club/tv/${id}-${s}-${e}`,
+                langs: ['en']
+            }
         ],
 
         anime: [
-            // VidSrc.cc - BEST for anime, native sub/dub support
-            (id, s, e, lang) => {
-                // VidSrc.cc has dedicated anime endpoint with /sub and /dub
-                if (lang === 'sub' || lang === 'ja') {
-                    return `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}?lang=ja`;
-                }
-                if (lang === 'dub' || lang === 'en') {
-                    return `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}?lang=en`;
-                }
-                return `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`;
+            {
+                name: 'VidSrc.icu',
+                url: (id, s, e) => `https://vidsrc.icu/embed/tv/${id}/${s}/${e}`,
+                langs: ['ja', 'en'],
+                dubParam: true  // ?dub=0 (sub) / ?dub=1 (dub) - WORKS
             },
-            // VidSrc.to
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.to/embed/tv/${id}/${s}/${e}`;
-                if (lang === 'sub' || lang === 'ja') url += '?lang=ja';
-                else if (lang === 'dub' || lang === 'en') url += '?lang=en';
-                else if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'VidSrc.cc',
+                url: (id, s, e) => `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`,
+                langs: ['multi'],
+                subtitleParam: 'ds_lang'
             },
-            // 2Embed
-            (id, s, e, lang) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
-            // VidLink.pro
-            (id, s, e, lang) => `https://vidlink.pro/tv/${id}/${s}/${e}`,
-            // VidSrc.pro
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.pro/embed/${id}/${s}/${e}`;
-                if (lang === 'sub' || lang === 'ja') url += '?lang=ja';
-                else if (lang === 'dub' || lang === 'en') url += '?lang=en';
-                else if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'AutoEmbed',
+                url: (id, s, e) => `https://autoembed.cc/tv/${id}/${s}/${e}`,
+                langs: ['en', 'multi']
             },
-            // AutoEmbed
-            (id, s, e, lang) => {
-                let url = `https://autoembed.cc/tv/${id}/${s}/${e}`;
-                if (lang === 'sub' || lang === 'ja') url += '?lang=ja';
-                else if (lang === 'dub' || lang === 'en') url += '?lang=en';
-                else if (lang) url += `?lang=${lang}`;
-                return url;
+            {
+                name: 'NontonGo',
+                url: (id, s, e) => `https://www.nontongo.win/embed/tv/${id}/${s}/${e}`,
+                langs: ['multi']
             },
-            // VidSrc.in
-            (id, s, e, lang) => {
-                let url = `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}`;
-                if (lang === 'sub' || lang === 'ja') url += '&lang=ja';
-                else if (lang === 'dub' || lang === 'en') url += '&lang=en';
-                else if (lang) url += `&lang=${lang}`;
-                return url;
+            {
+                name: 'MultiEmbed',
+                url: (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
+                langs: ['multi']
             },
-            // MultiEmbed
-            (id, s, e, lang) => {
-                let url = `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`;
-                if (lang === 'sub' || lang === 'ja') url += '&lang=ja';
-                else if (lang === 'dub' || lang === 'en') url += '&lang=en';
-                else if (lang) url += `&lang=${lang}`;
-                return url;
+            {
+                name: 'VidLink',
+                url: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}`,
+                langs: ['en']
+            },
+            {
+                name: 'VidSrc.in',
+                url: (id, s, e) => `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}`,
+                langs: ['multi']
+            },
+            {
+                name: '2Embed',
+                url: (id, s, e) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
+                langs: ['en']
             }
         ]
     },
 
     // Language options for the UI selectors
-    // 'value' is the lang code passed to providers
     LANG_OPTIONS: {
         movie: [
             { value: '', label: 'Auto (migliore disponibile)' },
-            { value: 'it', label: 'Italiano' },
-            { value: 'en', label: 'English' },
-            { value: 'es', label: 'Espanol' },
-            { value: 'fr', label: 'Francais' },
-            { value: 'de', label: 'Deutsch' }
+            { value: 'it', label: 'Italiano (sottotitoli)' },
+            { value: 'en', label: 'English (subtitles)' },
+            { value: 'es', label: 'Espanol (subtitulos)' },
+            { value: 'fr', label: 'Francais (sous-titres)' },
+            { value: 'de', label: 'Deutsch (Untertitel)' }
         ],
         tv: [
             { value: '', label: 'Auto (migliore disponibile)' },
-            { value: 'it', label: 'Italiano' },
-            { value: 'en', label: 'English' },
-            { value: 'es', label: 'Espanol' },
-            { value: 'fr', label: 'Francais' },
-            { value: 'de', label: 'Deutsch' }
+            { value: 'it', label: 'Italiano (sottotitoli)' },
+            { value: 'en', label: 'English (subtitles)' },
+            { value: 'es', label: 'Espanol (subtitulos)' },
+            { value: 'fr', label: 'Francais (sous-titres)' },
+            { value: 'de', label: 'Deutsch (Untertitel)' }
         ],
         anime: [
             { value: '', label: 'Auto' },
-            { value: 'sub', label: 'Japanese Sub (Originale)' },
-            { value: 'dub', label: 'English Dub' },
-            { value: 'it', label: 'Italiano' }
+            { value: 'sub', label: 'Sub (Giapponese + Sottotitoli)' },
+            { value: 'dub', label: 'Dub (Doppiaggio Inglese)' },
+            { value: 'it', label: 'Italiano (sottotitoli)' }
         ]
     },
 
@@ -232,6 +252,15 @@ const CONFIG = {
             { id: 18, name: 'Dramma' },
             { id: 10765, name: 'Sci-Fi & Fantasy' },
             { id: 9648, name: 'Mistero' }
+        ],
+        anime: [
+            { id: 16, name: 'Animazione' },
+            { id: 10759, name: 'Azione' },
+            { id: 35, name: 'Commedia' },
+            { id: 18, name: 'Dramma' },
+            { id: 10765, name: 'Sci-Fi & Fantasy' },
+            { id: 9648, name: 'Mistero' },
+            { id: 10749, name: 'Romance' }
         ]
     },
 
@@ -248,3 +277,21 @@ const CONFIG = {
         'Squid Game'
     ]
 };
+
+// =============================================
+// Firebase Initialization (auto-detect if configured)
+// =============================================
+(function initFirebase() {
+    if (typeof firebase === 'undefined') return;
+    if (CONFIG.FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return;
+
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+        }
+        CONFIG._firebaseReady = true;
+    } catch (e) {
+        console.warn('Firebase init failed:', e);
+        CONFIG._firebaseReady = false;
+    }
+})();
