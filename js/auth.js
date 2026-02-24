@@ -31,11 +31,6 @@ const Auth = (() => {
         return `${username.toLowerCase().trim()}@${CONFIG.FIREBASE_EMAIL_DOMAIN}`;
     }
 
-    function emailToUsername(email) {
-        if (!email) return null;
-        return email.split('@')[0];
-    }
-
     // =============================================
     // Registration (Firebase only)
     // =============================================

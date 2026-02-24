@@ -146,80 +146,36 @@ const UI = (() => {
         return observer;
     }
 
-    // Dynamic navbar (transparent to solid on scroll)
+    // Combined scroll handler: navbar + scroll-to-top (single rAF listener)
     function initDynamicNavbar() {
         const navbar = document.querySelector('.navbar');
-        if (!navbar) return;
+        const scrollBtn = document.querySelector('.scroll-top');
+
+        if (!navbar && !scrollBtn) return;
 
         let ticking = false;
         window.addEventListener('scroll', () => {
             if (!ticking) {
                 requestAnimationFrame(() => {
-                    navbar.classList.toggle('scrolled', window.scrollY > 50);
+                    const y = window.scrollY;
+                    if (navbar) navbar.classList.toggle('scrolled', y > 50);
+                    if (scrollBtn) scrollBtn.classList.toggle('visible', y > 500);
                     ticking = false;
                 });
                 ticking = true;
             }
-        });
+        }, { passive: true });
+
+        if (scrollBtn) {
+            scrollBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
     }
 
-    // Scroll to top button
+    // Kept for backward compatibility (now a no-op, logic merged into initDynamicNavbar)
     function initScrollToTop() {
-        const btn = document.querySelector('.scroll-top');
-        if (!btn) return;
-
-        let ticking = false;
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    btn.classList.toggle('visible', window.scrollY > 500);
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
-
-        btn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-
-    // Theme toggle
-    function initThemeToggle(toggleBtn) {
-        if (!toggleBtn) return;
-
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light');
-        }
-        updateThemeIcon(toggleBtn);
-
-        toggleBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light');
-            const isLight = document.body.classList.contains('light');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            updateThemeIcon(toggleBtn);
-        });
-    }
-
-    function updateThemeIcon(btn) {
-        const isLight = document.body.classList.contains('light');
-        const icon = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-        btn.innerHTML = icon;
-
-        // Also update mobile theme toggle if it exists
-        const mobileToggle = document.getElementById('themeToggleMobile');
-        if (mobileToggle) {
-            mobileToggle.querySelector('i')?.classList.remove('fa-sun', 'fa-moon');
-            mobileToggle.querySelector('i')?.classList.add(isLight ? 'fa-moon' : 'fa-sun');
-        }
-    }
-
-    // Mark selected card
-    function markSelectedCard(container, id) {
-        container.querySelectorAll('.media-card').forEach(card => {
-            card.classList.toggle('selected', card.dataset.id == id);
-        });
+        // Merged into initDynamicNavbar for single scroll listener
     }
 
     // Hide page loader
@@ -294,8 +250,6 @@ const UI = (() => {
         initScrollReveal,
         initDynamicNavbar,
         initScrollToTop,
-        initThemeToggle,
-        markSelectedCard,
         hidePageLoader,
         renderHero
     };

@@ -222,7 +222,10 @@ const Player = (() => {
     }
 
     function retry(state) {
-        const providerList = CONFIG.PROVIDERS[state.type];
+        // Use sorted providers (same as load()) to keep index consistent
+        const rawProviders = CONFIG.PROVIDERS[state.type];
+        if (!rawProviders) return load(state);
+        const providerList = sortProvidersByLang(rawProviders, state.lang, state.type);
         currentProviderIndex = (currentProviderIndex + 1) % providerList.length;
         return load(state);
     }

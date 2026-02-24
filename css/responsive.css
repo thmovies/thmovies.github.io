@@ -397,3 +397,310 @@
         padding-top: 0;
     }
 }
+
+/* =============================================
+   DEVICE-SPECIFIC OPTIMIZATIONS
+   Uses data-device attribute set by DeviceDetect
+   Values: phone, tablet, desktop, tv
+   ============================================= */
+
+/* ---- PHONE: Larger touch targets, compact layout ---- */
+[data-device="phone"] .btn,
+[data-device="phone"] .hero-btn,
+[data-device="phone"] select,
+[data-device="phone"] .genre-chip,
+[data-device="phone"] .filter-chip {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+[data-device="phone"] .fav-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+[data-device="phone"] .mobile-nav-item {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 6px;
+}
+
+[data-device="phone"] .cast-carousel {
+    gap: var(--space-sm);
+    scroll-snap-type: x mandatory;
+}
+
+[data-device="phone"] .cast-card {
+    scroll-snap-align: start;
+}
+
+[data-device="phone"] .search-bar input {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+[data-device="phone"] .player-container {
+    border-radius: 0;
+    margin: 0 calc(var(--space-sm) * -1);
+}
+
+/* ---- TABLET: Balanced layout, touch-friendly ---- */
+[data-device="tablet"] .btn,
+[data-device="tablet"] .hero-btn,
+[data-device="tablet"] select,
+[data-device="tablet"] .genre-chip,
+[data-device="tablet"] .filter-chip {
+    min-height: 44px;
+}
+
+[data-device="tablet"] .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+[data-device="tablet"] .detail-info-grid {
+    gap: var(--space-xl);
+}
+
+[data-device="tablet"] .episode-selector {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+[data-device="tablet"] .episode-selector select {
+    min-width: 200px;
+    flex: 0 1 auto;
+}
+
+[data-device="tablet"] .cast-carousel {
+    scroll-snap-type: x mandatory;
+}
+
+[data-device="tablet"] .cast-card {
+    scroll-snap-align: start;
+}
+
+[data-device="tablet"] .search-bar input {
+    font-size: 16px;
+}
+
+/* ---- DESKTOP: Full hover effects, dense layout ---- */
+[data-device="desktop"] .media-card {
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+
+[data-device="desktop"] .media-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+[data-device="desktop"] .fav-btn {
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s, background 0.2s;
+}
+
+[data-device="desktop"] .media-card:hover .fav-btn {
+    opacity: 1;
+}
+
+[data-device="desktop"] .media-card-overlay {
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+}
+
+[data-device="desktop"] .media-card:hover .media-card-overlay {
+    opacity: 1;
+}
+
+[data-device="desktop"] .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* ---- TV: 10-foot UI, huge targets, focus navigation ---- */
+[data-device="tv"] {
+    font-size: 1.2em;
+}
+
+[data-device="tv"] .navbar {
+    height: 80px;
+    padding: 0 var(--space-xl);
+}
+
+[data-device="tv"] .navbar-brand-text {
+    font-size: 2rem;
+    letter-spacing: 3px;
+}
+
+[data-device="tv"] .nav-tab {
+    font-size: 1.1rem;
+    padding: var(--space-sm) var(--space-lg);
+}
+
+[data-device="tv"] .hero {
+    height: 70vh;
+    max-height: 800px;
+}
+
+[data-device="tv"] .hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+}
+
+[data-device="tv"] .hero-overview {
+    font-size: 1.2rem;
+    max-width: 50%;
+}
+
+[data-device="tv"] .hero-btn {
+    padding: 18px 48px;
+    font-size: 1.2rem;
+    border-radius: 8px;
+}
+
+[data-device="tv"] .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-xl);
+    padding: var(--space-lg) var(--space-xl);
+}
+
+[data-device="tv"] .media-card {
+    border-radius: var(--radius-lg);
+}
+
+[data-device="tv"] .media-card-title {
+    font-size: 1.1rem;
+}
+
+[data-device="tv"] .media-card-horizontal {
+    width: 220px;
+}
+
+/* TV Focus states (D-pad / remote navigation) */
+[data-device="tv"] .media-card:focus,
+[data-device="tv"] .btn:focus,
+[data-device="tv"] .nav-tab:focus,
+[data-device="tv"] .hero-btn:focus,
+[data-device="tv"] select:focus,
+[data-device="tv"] .genre-chip:focus,
+[data-device="tv"] .filter-chip:focus,
+[data-device="tv"] a:focus {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 6px rgba(229, 9, 20, 0.3);
+}
+
+[data-device="tv"] .media-card:focus {
+    transform: scale(1.08);
+    z-index: 3;
+    transition: transform 0.2s var(--ease-out);
+}
+
+[data-device="tv"] .media-card:focus .media-card-overlay {
+    opacity: 1;
+}
+
+[data-device="tv"] .media-card:focus .fav-btn {
+    opacity: 1;
+}
+
+/* TV: Larger buttons and selects */
+[data-device="tv"] .btn {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    min-height: 56px;
+}
+
+[data-device="tv"] select {
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    min-height: 56px;
+}
+
+[data-device="tv"] .search-bar input {
+    padding: 18px 50px;
+    font-size: 1.2rem;
+    border-radius: var(--radius-lg);
+}
+
+/* TV: Player fullwidth */
+[data-device="tv"] .player-container {
+    border-radius: var(--radius-lg);
+}
+
+/* TV: Section titles bigger */
+[data-device="tv"] .section-title {
+    font-size: 1.6rem;
+}
+
+/* TV: Cast cards bigger */
+[data-device="tv"] .cast-card {
+    width: 130px;
+}
+
+[data-device="tv"] .cast-photo {
+    width: 110px;
+    height: 110px;
+}
+
+[data-device="tv"] .cast-name {
+    font-size: 0.95rem;
+}
+
+/* TV: Detail page */
+[data-device="tv"] .detail-title {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+[data-device="tv"] .detail-overview {
+    font-size: 1.15rem;
+    line-height: 1.7;
+}
+
+[data-device="tv"] .detail-poster {
+    width: 280px;
+}
+
+/* TV: Hide mobile nav */
+[data-device="tv"] .mobile-nav {
+    display: none !important;
+}
+
+/* TV: Toast bigger */
+[data-device="tv"] .toast {
+    font-size: 1.1rem;
+    padding: var(--space-md) var(--space-lg);
+}
+
+/* TV: Profile page */
+[data-device="tv"] .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+}
+
+[data-device="tv"] .stat-card {
+    padding: var(--space-xl);
+}
+
+[data-device="tv"] .stat-card .stat-value {
+    font-size: 3rem;
+}
+
+/* TV: Overlay always visible (no hover) */
+[data-device="tv"] .media-card-overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+}
+
+[data-device="tv"] .provider-badge {
+    opacity: 1;
+    font-size: 1rem;
+}
+
+/* TV: Footer bigger */
+[data-device="tv"] .footer {
+    padding: var(--space-xl) 0;
+    font-size: 1.1rem;
+}
+
+[data-device="tv"] .footer-brand {
+    font-size: 1.8rem;
+}

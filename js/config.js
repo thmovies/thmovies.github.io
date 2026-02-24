@@ -295,3 +295,127 @@ const CONFIG = {
         CONFIG._firebaseReady = false;
     }
 })();
+
+// =============================================
+// Device Detection Module
+// Detects: phone, tablet, desktop, tv
+// Sets body[data-device] for CSS targeting
+// =============================================
+const DeviceDetect = (() => {
+    let _device = null;
+
+    // TV keywords in user agent
+    const TV_UA = /smart-?tv|webos|tizen|hbbtv|netcast|viera|nettv|roku|dlna|pov_tv|hisense|philipstv|samsungbrowser\/.*tv|crkey|firetv|aftb|aftt|afts|aftm|bravia|appletv|roku|playstation|xbox|nintendo/i;
+
+    // Tablet keywords
+    const TABLET_UA = /ipad|tablet|playbook|silk|kindle|nexus\s?(7|9|10)|sm-t|gt-p|gt-n|mediapad|lenovo\s?tab/i;
+
+    // Phone keywords
+    const PHONE_UA = /mobile|iphone|ipod|android.*mobile|windows\s?phone|blackberry|opera\s?mini|iemobile/i;
+
+    function detect() {
+        if (_device) return _device;
+
+        const ua = navigator.userAgent || '';
+        const w = window.screen?.width || window.innerWidth;
+        const h = window.screen?.height || window.innerHeight;
+        const maxDim = Math.max(w, h);
+        const minDim = Math.min(w, h);
+        const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const hasCoarsePointer = window.matchMedia?.('(pointer: coarse)')?.matches;
+
+        // 1) TV detection (UA-based, most reliable)
+        if (TV_UA.test(ua)) {
+            _device = 'tv';
+        }
+        // 2) Large screens without touch = TV (e.g. browser on smart TV)
+        else if (maxDim >= 1800 && !hasTouch && !hasCoarsePointer) {
+            // Could be large monitor or TV; only mark as TV if no fine pointer
+            const hasFinePointer = window.matchMedia?.('(pointer: fine)')?.matches;
+            _device = hasFinePointer ? 'desktop' : 'tv';
+        }
+        // 3) Tablet detection
+        else if (TABLET_UA.test(ua)) {
+            _device = 'tablet';
+        }
+        else if (hasTouch && minDim >= 600 && maxDim <= 1400) {
+            // Touch device with tablet-like dimensions
+            _device = 'tablet';
+        }
+        // 4) Phone detection
+        else if (PHONE_UA.test(ua)) {
+            _device = 'phone';
+        }
+        else if (hasTouch && hasCoarsePointer && maxDim <= 900) {
+            _device = 'phone';
+        }
+        // 5) Desktop fallback
+        else {
+            _device = 'desktop';
+        }
+
+        return _device;
+    }
+
+    function apply() {
+        const device = detect();
+        document.documentElement.dataset.device = device;
+        document.body?.dataset && (document.body.dataset.device = device);
+        return device;
+    }
+
+    function getDevice() {
+        return _device || detect();
+    }
+
+    function isPhone() { return getDevice() === 'phone'; }
+    function isTablet() { return getDevice() === 'tablet'; }
+    function isDesktop() { return getDevice() === 'desktop'; }
+    function isTV() { return getDevice() === 'tv'; }
+    function isTouchDevice() { return isPhone() || isTablet(); }
+
+    // Auto-detect immediately
+    detect();
+
+    // Apply to <html> right away (body might not exist yet)
+    if (document.documentElement) {
+        document.documentElement.dataset.device = _device;
+    }
+
+    // Apply to <body> once DOM is ready
+    if (document.body) {
+        document.body.dataset.device = _device;
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.dataset.device = _device;
+        });
+    }
+
+    // Re-evaluate on resize (e.g. desktop emulating mobile, or orientation change)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            const oldDevice = _device;
+            _device = null; // Reset cache
+            const newDevice = detect();
+            if (newDevice !== oldDevice) {
+                apply();
+                document.dispatchEvent(new CustomEvent('deviceChanged', {
+                    detail: { from: oldDevice, to: newDevice }
+                }));
+            }
+        }, 500);
+    });
+
+    return {
+        detect,
+        apply,
+        getDevice,
+        isPhone,
+        isTablet,
+        isDesktop,
+        isTV,
+        isTouchDevice
+    };
+})();

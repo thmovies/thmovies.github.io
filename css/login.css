@@ -533,3 +533,110 @@
     background: var(--accent-hover);
     transform: translateY(-2px);
 }
+
+/* =============================================
+   Login - Device-Specific Optimizations
+   ============================================= */
+
+/* Phone: Prevent iOS zoom, larger touch targets */
+[data-device="phone"] .input-group input {
+    font-size: 16px;
+    padding: 14px 14px 14px 44px;
+}
+
+[data-device="phone"] .login-card {
+    padding: var(--space-xl) var(--space-lg);
+    border-radius: var(--radius-lg);
+}
+
+[data-device="phone"] .login-btn,
+[data-device="phone"] .auth-tab,
+[data-device="phone"] .rules-close-btn {
+    min-height: 48px;
+}
+
+[data-device="phone"] .login-logo img {
+    height: 60px;
+}
+
+[data-device="phone"] .login-logo {
+    margin-bottom: var(--space-xl);
+}
+
+/* Tablet: Slightly larger card */
+[data-device="tablet"] .login-card {
+    max-width: 460px;
+}
+
+[data-device="tablet"] .input-group input {
+    font-size: 16px;
+}
+
+[data-device="tablet"] .login-btn,
+[data-device="tablet"] .auth-tab {
+    min-height: 48px;
+}
+
+/* TV: 10-foot UI for login */
+[data-device="tv"] .login-card {
+    max-width: 580px;
+    padding: var(--space-2xl) var(--space-2xl);
+}
+
+[data-device="tv"] .login-logo img {
+    height: 120px;
+}
+
+[data-device="tv"] .login-logo-text {
+    font-size: 3rem;
+}
+
+[data-device="tv"] .auth-tab {
+    font-size: 1.1rem;
+    padding: 14px 0;
+}
+
+[data-device="tv"] .input-group input {
+    font-size: 1.2rem;
+    padding: 20px 20px 20px 52px;
+}
+
+[data-device="tv"] .input-group .input-icon {
+    font-size: 1.3rem;
+    left: 18px;
+}
+
+[data-device="tv"] .login-btn {
+    font-size: 1.2rem;
+    padding: 20px;
+}
+
+[data-device="tv"] .rules-box {
+    max-width: 650px;
+    padding: var(--space-2xl) var(--space-2xl);
+}
+
+[data-device="tv"] .rules-box h2 {
+    font-size: 1.8rem;
+}
+
+[data-device="tv"] .rules-box li {
+    font-size: 1.15rem;
+}
+
+[data-device="tv"] .rules-close-btn {
+    font-size: 1.1rem;
+    padding: 18px 56px;
+}
+
+/* TV: Focus states for remote navigation */
+[data-device="tv"] .auth-tab:focus,
+[data-device="tv"] .input-group input:focus,
+[data-device="tv"] .login-btn:focus,
+[data-device="tv"] .password-toggle:focus,
+[data-device="tv"] .rules-close-btn:focus,
+[data-device="tv"] .login-theme-toggle:focus {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px rgba(229, 9, 20, 0.3);
+}
